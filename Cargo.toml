@@ -1,0 +1,18 @@
+[package]
+name = "for-each-account"
+version = "0.1.0"
+authors = ["softprops <d.tangren@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+structopt = "0.3"
+tokio = { version = "0.2", features = ["macros", "process"] }
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+shlex = "0.1.1"
+colored = "2.0.0"
+futures = "0.3.5"
+async-trait = "0.1.40"
+anyhow = "1.0.32"
