@@ -33,7 +33,7 @@ impl Aws for Cmd {
             .output()
             .await?;
         if !output.status.success() {
-            Err(anyhow::anyhow!(from_utf8(&output.stderr)?.to_string()))?
+            return Err(anyhow!(from_utf8(&output.stderr)?.to_string()).into())
         }
         Ok(serde_json::from_slice::<Vec<Account>>(&output.stdout)?
             .into_iter()
@@ -65,7 +65,7 @@ impl Aws for Cmd {
         if output.status.success() {
             Ok(serde_json::from_slice::<Credentials>(&output.stdout)?)
         } else {
-            Err(anyhow!(from_utf8(&output.stderr)?.to_string()))?
+            Err(anyhow!(from_utf8(&output.stderr)?.to_string()).into())
         }
     }
 }

@@ -32,6 +32,6 @@ pub async fn exec(
     if output.status.success() {
         Ok(from_utf8(&output.stdout)?.to_string())
     } else {
-        Err(anyhow!(from_utf8(&output.stderr)?.to_string()))?
+        Err(anyhow!(from_utf8(&output.stderr)?.to_string()).into())
     }
 }
