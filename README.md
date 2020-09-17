@@ -52,9 +52,9 @@ You can also inline a chain of commands by wrapping your accomand with `sh -c ".
 
 ```sh
 AWS_PROFILE=your-root-organization-iam-user \
-aws-crossing \
--role role-name \
--command 'sh -c "echo -e $AWS_ACCOUNT_ID && aws s3 ls | wc -l"'
+    aws-crossing \
+    --role role-name \
+    --command 'sh -c "echo -e $AWS_ACCOUNT_ID && aws s3 ls | wc -l"'
 ```
 
 ## how it works
