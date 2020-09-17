@@ -2,6 +2,14 @@
 
 Do cross AWS account work more efficiently
 
+## Install
+
+Via GitHub Releases
+
+```sh
+$ curl --tlsv1.2 -L "https://github.com/softprops/for-each-account/releases/download/v0.1.0/for-each-account-$(uname -s)-$(uname -m).tar.gz" \
+  | tar -xz -C ~/bin
+```
 
 ## usage
 
@@ -14,9 +22,10 @@ This following will iterate over all subaccounts assuming a role within those ac
 
 ```sh
 AWS_PROFILE=your-root-organization-iam-user \
-    cargo run -- \
+    for-each-account \
     --role role-name \
     --command 'command to run'
 ```
+
 
 Doug Tangren (softprops) 2020
