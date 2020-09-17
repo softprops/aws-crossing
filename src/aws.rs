@@ -5,6 +5,28 @@ use serde::Deserialize;
 use std::{error::Error, str::from_utf8};
 use tokio::process::Command;
 
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "PascalCase")]
+pub struct Account {
+    pub id: String,
+    pub name: String,
+    status: String,
+}
+
+impl Account {
+    fn is_active(&self) -> bool {
+        self.status == "ACTIVE"
+    }
+}
+
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "PascalCase")]
+pub struct Credentials {
+    pub access_key_id: String,
+    pub secret_access_key: String,
+    pub session_token: String,
+}
+
 #[async_trait]
 pub trait Aws {
     async fn accounts(&self) -> Result<Vec<Account>, Box<dyn Error>>;
@@ -37,7 +59,7 @@ impl Aws for Cmd {
         }
         Ok(serde_json::from_slice::<Vec<Account>>(&output.stdout)?
             .into_iter()
-            .filter(|a| a.status == "ACTIVE")
+            .filter(Account::is_active)
             .collect())
     }
 
@@ -68,20 +90,4 @@ impl Aws for Cmd {
             Err(anyhow!(from_utf8(&output.stderr)?.to_string()).into())
         }
     }
-}
-
-#[derive(Deserialize, Debug)]
-#[serde(rename_all = "PascalCase")]
-pub struct Account {
-    pub id: String,
-    pub name: String,
-    status: String,
-}
-
-#[derive(Deserialize, Debug)]
-#[serde(rename_all = "PascalCase")]
-pub struct Credentials {
-    pub access_key_id: String,
-    pub secret_access_key: String,
-    pub session_token: String,
 }
