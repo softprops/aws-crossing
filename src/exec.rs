@@ -15,6 +15,9 @@ pub async fn exec(
         session_token,
     } = credentials;
     let split = shlex::split(&command).unwrap();
+    if split.iter().next().is_none() {
+        return Err(anyhow!("Empty command".to_string()).into());
+    }
     let output = split
         .iter()
         .skip(1)

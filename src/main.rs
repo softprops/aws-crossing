@@ -8,6 +8,14 @@ use aws::{Account, Aws, Cmd};
 mod exec;
 use exec::exec;
 
+fn nonempty_command(src: &str) -> Result<String, anyhow::Error> {
+    let trim = src.trim();
+    if trim.is_empty() {
+        return Err(anyhow::anyhow!("Please provide a valid non-empty command"));
+    }
+    Ok(trim.into())
+}
+
 /// Runs a command in all subaccounts of an AWS Organization
 #[derive(StructOpt, Clone)]
 struct Opts {
@@ -15,7 +23,7 @@ struct Opts {
     #[structopt(short, long)]
     role: String,
     /// Command to execute
-    #[structopt(short, long)]
+    #[structopt(short, long, parse(try_from_str = nonempty_command))]
     command: String,
 }
 
