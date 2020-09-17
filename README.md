@@ -1,8 +1,8 @@
-<h1 align="center">
-  🚸
-</h1>
+
 
 <h1 align="center">
+🚸
+<br/>
   aws-crossing
 </h1>
 
@@ -11,8 +11,8 @@
 </p>
 
 <div align="center">
-  <a alt="GitHub Actions" href="https://github.com/softprops/dynomite/actions">
-    <img src="https://github.com/softprops/dynomite/workflows/Main/badge.svg"/>
+  <a alt="GitHub Actions" href="https://github.com/softprops/aws-crossing/actions">
+    <img src="https://github.com/softprops/aws-crossing/workflows/Main/badge.svg"/>
   </a>
   <a alt="license" href="LICENSE">
     <img src="https://img.shields.io/badge/license-MIT-brightgreen.svg"/>
@@ -33,7 +33,7 @@ This tool helps you do that. It assumes only that you've defined an assumable IA
 Via GitHub Releases
 
 ```sh
-$ curl --tlsv1.2 -L "https://github.com/softprops/for-each-account/releases/download/v0.1.0/for-each-account-$(uname -s)-$(uname -m).tar.gz" \
+$ curl --tlsv1.2 -L "https://github.com/softprops/aws-crossing/releases/download/v0.1.1/aws-crossing-$(uname -s)-$(uname -m).tar.gz" \
   | tar -xz -C ~/bin
 ```
 
