@@ -44,6 +44,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "aws-crossing"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "colored",
+ "futures",
+ "serde",
+ "serde_json",
+ "shlex",
+ "structopt",
+ "tokio",
+]
+
+[[package]]
 name = "bitflags"
 version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -85,21 +100,6 @@ dependencies = [
  "atty",
  "lazy_static",
  "winapi 0.3.9",
-]
-
-[[package]]
-name = "for-each-account"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-trait",
- "colored",
- "futures",
- "serde",
- "serde_json",
- "shlex",
- "structopt",
- "tokio",
 ]
 
 [[package]]
