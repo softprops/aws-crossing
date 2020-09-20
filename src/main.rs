@@ -105,7 +105,7 @@ mod tests {
     #[test]
     fn opts_errs_on_empty_command() {
         match Opts::from_iter_safe(&["aws-crossing", "-r", "role", "-c", ""]) {
-            Ok(_) => assert!(false),
+            Ok(_) => panic!("fail"),
             Err(e) => {
                 assert!(format!("{}", e).contains("Please provide a valid non-empty command"))
             }
