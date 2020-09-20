@@ -121,7 +121,7 @@ mod tests {
             "-c",
             "test",
         ]) {
-            Ok(_) => assert!(false),
+            Ok(_) => panic!("fail"),
             Err(e) => {
                 assert!(format!("{}", e).contains("Please provide a role name, not a role arn"))
             }
@@ -172,7 +172,7 @@ mod tests {
         )
         .await
         {
-            Ok(_) => assert!(false),
+            Ok(_) => panic!("fail"),
             Err(e) => assert_eq!("boom", format!("{}", e)),
         }
     }
