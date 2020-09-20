@@ -16,25 +16,40 @@ fn nonempty_command(src: &str) -> Result<String, anyhow::Error> {
     Ok(trim.into())
 }
 
+fn role_name(src: &str) -> Result<String, anyhow::Error> {
+    let role = src.trim();
+    if role.starts_with("arn:aws:") {
+        return Err(anyhow::anyhow!(
+            "Please provide a role name, not a role arn"
+        ));
+    }
+    Ok(role.into())
+}
+
 /// Runs a command in all subaccounts of an AWS Organization
-#[derive(StructOpt, Clone)]
+#[derive(Debug, StructOpt, Clone, PartialEq)]
 struct Opts {
     /// Name of IAM role to assume
-    #[structopt(short, long)]
+    #[structopt(short, long, parse(try_from_str = role_name))]
     role: String,
     /// Command to execute
     #[structopt(short, long, parse(try_from_str = nonempty_command))]
     command: String,
 }
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
-    let opts = Opts::from_args();
-    let results = stream::iter(Cmd.accounts().await?.into_iter().map(
+async fn run<A>(
+    opts: Opts,
+    aws: A,
+) -> Result<(), Box<dyn Error>>
+where
+    A: Aws + Clone,
+{
+    let results = stream::iter(aws.accounts().await?.into_iter().map(
         |Account { id, name, .. }| {
             let Opts { role, command } = opts.clone();
+            let aws = aws.clone();
             async move {
-                match Cmd.assume_role(&id, &role).await {
+                match aws.assume_role(&id, &role).await {
                     Err(e) => {
                         eprintln!(
                             "{}",
@@ -71,6 +86,127 @@ async fn main() -> Result<(), Box<dyn Error>> {
     .buffer_unordered(8)
     .collect::<Vec<()>>();
     results.await;
-
     Ok(())
+}
+
+#[tokio::main(core_threads = 8)]
+async fn main() -> Result<(), Box<dyn Error>> {
+    env_logger::init();
+    let opts = Opts::from_args();
+    run(opts, Cmd).await?;
+    Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use aws::Credentials;
+
+    #[test]
+    fn opts_errs_on_empty_command() {
+        match Opts::from_iter_safe(&["aws-crossing", "-r", "role", "-c", ""]) {
+            Ok(_) => assert!(false),
+            Err(e) => {
+                assert!(format!("{}", e).contains("Please provide a valid non-empty command"))
+            }
+        }
+    }
+
+    #[test]
+    fn opts_errs_on_role_arn() {
+        match Opts::from_iter_safe(&[
+            "aws-crossing",
+            "-r",
+            "arn:aws:iam::account-id:role/role-name-with-path",
+            "-c",
+            "test",
+        ]) {
+            Ok(_) => assert!(false),
+            Err(e) => {
+                assert!(format!("{}", e).contains("Please provide a role name, not a role arn"))
+            }
+        }
+    }
+
+    #[test]
+    fn opts_accepts_role_and_command() -> Result<(), Box<dyn Error>> {
+        assert_eq!(
+            Opts {
+                role: "role-name-with-path".into(),
+                command: "test".into()
+            },
+            Opts::from_iter_safe(&["aws-crossing", "-r", "role-name-with-path", "-c", "test"])?
+        );
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn errs_if_accounts_fetch_fails() {
+        #[derive(Clone)]
+        struct FakeAws;
+        #[async_trait::async_trait]
+        impl Aws for FakeAws {
+            async fn accounts(&self) -> Result<Vec<Account>, Box<dyn Error>> {
+                Err(anyhow::anyhow!("boom".to_string()).into())
+            }
+
+            async fn assume_role(
+                &self,
+                _: &str,
+                _: &str,
+            ) -> Result<Credentials, Box<dyn Error>> {
+                Ok(Credentials {
+                    access_key_id: "xxx".into(),
+                    secret_access_key: "yyy".into(),
+                    session_token: "zzz".into(),
+                })
+            }
+        }
+
+        match run(
+            Opts {
+                role: "role".into(),
+                command: "test".into(),
+            },
+            FakeAws,
+        )
+        .await
+        {
+            Ok(_) => assert!(false),
+            Err(e) => assert_eq!("boom", format!("{}", e)),
+        }
+    }
+
+    #[tokio::test]
+    async fn runs_commands() {
+        #[derive(Clone)]
+        struct FakeAws;
+        #[async_trait::async_trait]
+        impl Aws for FakeAws {
+            async fn accounts(&self) -> Result<Vec<Account>, Box<dyn Error>> {
+                Ok(Vec::default())
+            }
+
+            async fn assume_role(
+                &self,
+                _: &str,
+                _: &str,
+            ) -> Result<Credentials, Box<dyn Error>> {
+                Ok(Credentials {
+                    access_key_id: "xxx".into(),
+                    secret_access_key: "yyy".into(),
+                    session_token: "zzz".into(),
+                })
+            }
+        }
+        assert!(run(
+            Opts {
+                role: "role".into(),
+                command: "test".into()
+            },
+            FakeAws
+        )
+        .await
+        .is_ok())
+    }
 }

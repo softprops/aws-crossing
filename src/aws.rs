@@ -38,6 +38,7 @@ pub trait Aws {
     ) -> Result<Credentials, Box<dyn Error>>;
 }
 
+#[derive(Clone)]
 pub struct Cmd;
 
 #[async_trait]
