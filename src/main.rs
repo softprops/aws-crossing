@@ -89,7 +89,7 @@ where
     Ok(())
 }
 
-#[tokio::main(core_threads = 8)]
+#[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     env_logger::init();
     let opts = Opts::from_args();
