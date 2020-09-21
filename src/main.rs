@@ -6,12 +6,13 @@ use structopt::StructOpt;
 mod aws;
 use aws::{Account, Aws, Cmd};
 mod exec;
+use anyhow::anyhow;
 use exec::exec;
 
 fn nonempty_command(src: &str) -> Result<String, anyhow::Error> {
     let trim = src.trim();
     if trim.is_empty() {
-        return Err(anyhow::anyhow!("Please provide a valid non-empty command"));
+        return Err(anyhow!("Please provide a valid non-empty command"));
     }
     Ok(trim.into())
 }
@@ -19,9 +20,7 @@ fn nonempty_command(src: &str) -> Result<String, anyhow::Error> {
 fn role_name(src: &str) -> Result<String, anyhow::Error> {
     let role = src.trim();
     if role.starts_with("arn:aws:") {
-        return Err(anyhow::anyhow!(
-            "Please provide a role name, not a role arn"
-        ));
+        return Err(anyhow!("Please provide a role name, not a role arn"));
     }
     Ok(role.into())
 }
@@ -105,10 +104,10 @@ mod tests {
     #[test]
     fn opts_errs_on_empty_command() {
         match Opts::from_iter_safe(&["aws-crossing", "-r", "role", "-c", ""]) {
-            Ok(_) => panic!("fail"),
             Err(e) => {
                 assert!(format!("{}", e).contains("Please provide a valid non-empty command"))
             }
+            _ => unreachable!(),
         }
     }
 
@@ -121,10 +120,10 @@ mod tests {
             "-c",
             "test",
         ]) {
-            Ok(_) => panic!("fail"),
             Err(e) => {
                 assert!(format!("{}", e).contains("Please provide a role name, not a role arn"))
             }
+            _ => unreachable!(),
         }
     }
 
@@ -147,7 +146,7 @@ mod tests {
         #[async_trait::async_trait]
         impl Aws for FakeAws {
             async fn accounts(&self) -> Result<Vec<Account>, Box<dyn Error>> {
-                Err(anyhow::anyhow!("boom".to_string()).into())
+                Err(anyhow!("boom".to_string()).into())
             }
 
             async fn assume_role(
@@ -172,8 +171,8 @@ mod tests {
         )
         .await
         {
-            Ok(_) => panic!("fail"),
             Err(e) => assert_eq!("boom", format!("{}", e)),
+            _ => unreachable!(),
         }
     }
 
