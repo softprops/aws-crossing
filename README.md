@@ -30,7 +30,7 @@ This tool helps you do that. It assumes only that you've defined an assumable IA
 
 ## install
 
-Via Homebrew
+Via Homebrew for mac users
 
 ```sh
 $ brew install softprops/tools/aws-crossing
