@@ -54,7 +54,7 @@ AWS_PROFILE=your-root-organization-iam-user \
     --command 'command to run or script to call'
 ```
 
-You can also inline a chain of commands by wrapping your accomand with `sh -c "..."`
+You can also inline a chain of commands by wrapping your command with `sh -c "..."`
 
 ```sh
 AWS_PROFILE=your-root-organization-iam-user \
@@ -67,9 +67,9 @@ AWS_PROFILE=your-root-organization-iam-user \
 
 This tool will use your current aws credentials to list all accounts. You'll need the `organizations:ListAccounts` account permission for this. 
 
-The tool will then iterate over those accounts an create a temporary session within that account assume a provider role. 
+The tool will then iterate over those accounts an create a temporary session within that account assuming a provided role. 
 
-You can then execute an arbitary command that will have those credentials made available in addition to an environment variable `AWS_ACCOUNT_ID` which is the current account the command is being executed for.
+You can then execute an arbitary command that will have those credentials made available in addition to an environment variable `AWS_ACCOUNT_ID` which is the current account id the command is being executed for.
 
 
 Doug Tangren (softprops) 2020
