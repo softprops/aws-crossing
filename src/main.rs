@@ -199,8 +199,8 @@ mod tests {
 
             async fn assume_role(
                 &self,
-                _: &str,
-                _: &str,
+                _: String,
+                _: String,
             ) -> Result<Credentials, Box<dyn Error + Send + Sync + 'static>> {
                 Ok(Credentials {
                     access_key_id: "xxx".into(),
