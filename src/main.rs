@@ -39,16 +39,23 @@ struct Opts {
 async fn run<A>(
     opts: Opts,
     aws: A,
-) -> Result<(), Box<dyn Error>>
+) -> Result<(), Box<dyn Error + Send + Sync + 'static>>
 where
-    A: Aws + Clone,
+    A: Aws + Clone + Sync + Send + 'static,
 {
     let results = stream::iter(aws.accounts().await?.into_iter().map(
         |Account { id, name, .. }| {
             let Opts { role, command } = opts.clone();
             let aws = aws.clone();
-            async move {
-                match aws.assume_role(&id, &role).await {
+            let id2 = id.clone();
+            let role2 = role.clone();
+            tokio::spawn(async move {
+                println!(
+                    "working on {} in thread {:?}",
+                    id,
+                    std::thread::current().id()
+                );
+                match aws.assume_role(id2, role2).await {
                     Err(e) => {
                         eprintln!(
                             "{}",
@@ -62,7 +69,7 @@ where
                         );
                         eprintln!("{}", e)
                     }
-                    Ok(creds) => match exec(creds, &id, &command).await {
+                    Ok(creds) => match exec(creds, id.clone(), command.clone()).await {
                         Err(e) => {
                             eprintln!(
                                 "{}",
@@ -79,17 +86,17 @@ where
                         Ok(output) => println!("{}", output),
                     },
                 }
-            }
+            })
         },
     ))
     .buffer_unordered(8)
-    .collect::<Vec<()>>();
+    .collect::<Vec<_>>();
     results.await;
     Ok(())
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
+async fn main() -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
     env_logger::init();
     let opts = Opts::from_args();
     run(opts, Cmd).await?;
@@ -128,7 +135,7 @@ mod tests {
     }
 
     #[test]
-    fn opts_accepts_role_and_command() -> Result<(), Box<dyn Error>> {
+    fn opts_accepts_role_and_command() -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
         assert_eq!(
             Opts {
                 role: "role-name-with-path".into(),
@@ -145,15 +152,17 @@ mod tests {
         struct FakeAws;
         #[async_trait::async_trait]
         impl Aws for FakeAws {
-            async fn accounts(&self) -> Result<Vec<Account>, Box<dyn Error>> {
+            async fn accounts(
+                &self
+            ) -> Result<Vec<Account>, Box<dyn Error + Send + Sync + 'static>> {
                 Err(anyhow!("boom".to_string()).into())
             }
 
             async fn assume_role(
                 &self,
-                _: &str,
-                _: &str,
-            ) -> Result<Credentials, Box<dyn Error>> {
+                _: String,
+                _: String,
+            ) -> Result<Credentials, Box<dyn Error + Send + Sync + 'static>> {
                 Ok(Credentials {
                     access_key_id: "xxx".into(),
                     secret_access_key: "yyy".into(),
@@ -182,15 +191,17 @@ mod tests {
         struct FakeAws;
         #[async_trait::async_trait]
         impl Aws for FakeAws {
-            async fn accounts(&self) -> Result<Vec<Account>, Box<dyn Error>> {
+            async fn accounts(
+                &self
+            ) -> Result<Vec<Account>, Box<dyn Error + Send + Sync + 'static>> {
                 Ok(Vec::default())
             }
 
             async fn assume_role(
                 &self,
-                _: &str,
-                _: &str,
-            ) -> Result<Credentials, Box<dyn Error>> {
+                _: String,
+                _: String,
+            ) -> Result<Credentials, Box<dyn Error + Send + Sync + 'static>> {
                 Ok(Credentials {
                     access_key_id: "xxx".into(),
                     secret_access_key: "yyy".into(),
