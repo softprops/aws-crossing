@@ -39,7 +39,7 @@ $ brew install softprops/tools/aws-crossing
 Via GitHub Releases
 
 ```sh
-$ curl --tlsv1.2 -L "https://github.com/softprops/aws-crossing/releases/download/v0.1.2/aws-crossing-$(uname -s)-$(uname -m).tar.gz" \
+$ curl --tlsv1.2 -L "https://github.com/softprops/aws-crossing/releases/download/v0.1.3/aws-crossing-$(uname -s)-$(uname -m).tar.gz" \
   | tar -xz -C ~/bin
 ```
 
