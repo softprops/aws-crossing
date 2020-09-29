@@ -6,15 +6,15 @@ use tokio::process::Command;
 
 pub async fn exec(
     credentials: Credentials,
-    account_id: impl AsRef<str>,
-    command: impl AsRef<str>,
-) -> Result<String, Box<dyn Error + Send + Sync + 'static>> {
+    account_id: &str,
+    command: &str,
+) -> Result<String, Box<dyn Error>> {
     let Credentials {
         access_key_id,
         secret_access_key,
         session_token,
     } = credentials;
-    let split = shlex::split(command.as_ref()).unwrap();
+    let split = shlex::split(&command).unwrap();
     if split.get(0).is_none() {
         return Err(anyhow!("Empty command".to_string()).into());
     }
@@ -26,7 +26,7 @@ pub async fn exec(
                 .env("AWS_ACCESS_KEY_ID", access_key_id)
                 .env("AWS_SECRET_ACCESS_KEY", secret_access_key)
                 .env("AWS_SESSION_TOKEN", session_token)
-                .env("AWS_ACCOUNT_ID", account_id.as_ref()),
+                .env("AWS_ACCOUNT_ID", account_id),
             |cmd, arg| cmd.arg(arg),
         )
         .output()

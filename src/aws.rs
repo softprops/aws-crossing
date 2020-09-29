@@ -29,15 +29,13 @@ pub struct Credentials {
 
 #[async_trait]
 pub trait Aws {
-    /// Lists aws sub accounts
-    async fn accounts(&self) -> Result<Vec<Account>, Box<dyn Error + Send + Sync + 'static>>;
+    async fn accounts(&self) -> Result<Vec<Account>, Box<dyn Error>>;
 
-    /// Assumes an IAM role for within a given account
     async fn assume_role(
         &self,
-        account_id: String,
-        role: String,
-    ) -> Result<Credentials, Box<dyn Error + Send + Sync + 'static>>;
+        account_id: &str,
+        role: &str,
+    ) -> Result<Credentials, Box<dyn Error>>;
 }
 
 #[derive(Clone)]
@@ -45,7 +43,7 @@ pub struct Cmd;
 
 #[async_trait]
 impl Aws for Cmd {
-    async fn accounts(&self) -> Result<Vec<Account>, Box<dyn Error + Send + Sync + 'static>> {
+    async fn accounts(&self) -> Result<Vec<Account>, Box<dyn Error>> {
         let output = Command::new("aws")
             .args(&[
                 "organizations",
@@ -68,9 +66,9 @@ impl Aws for Cmd {
 
     async fn assume_role(
         &self,
-        account_id: String,
-        role: String,
-    ) -> Result<Credentials, Box<dyn Error + Send + Sync + 'static>> {
+        account_id: &str,
+        role: &str,
+    ) -> Result<Credentials, Box<dyn Error>> {
         let output = Command::new("aws")
             .args(&[
                 "sts",
